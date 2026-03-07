@@ -4,6 +4,7 @@ import pygame
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
+from  alien import Alien
 
 
 class AlienInvasion:
@@ -25,8 +26,12 @@ class AlienInvasion:
 
         # create group to bullet
         self.bullets = pygame.sprite.Group()
+    #     create the alien fleet
+        self.aliens = pygame.sprite.Group()
+
+        self._create_fleet()
     #     set the background color
-        self.bg_color =(230, 230, 230)
+    #     self.bg_color =(230, 230, 230)
 
     def run_game(self):
         """Start the main loop for the game"""
@@ -35,6 +40,7 @@ class AlienInvasion:
             self.ship.update()
             self.bullets.update()
             self._update_screen()
+
 
             self.clock.tick(60)
 
@@ -48,6 +54,30 @@ class AlienInvasion:
                 self._check_keydown_events(event)
             elif event.type ==pygame.KEYUP:
                 self._check_keyup_events(event)
+
+
+    def _create_fleet(self):
+        """Create a fleet of aliens"""
+        alien = Alien(self)
+        alien_width, alien_height = alien.rect.size
+
+        current_x, current_y = alien_width, alien_height
+        while current_y < (self.setting.screen_height - 3 * alien_height):
+            while current_x < (self.settings.screen_width - 2 * alien_width):
+            # new_alien = Alien(self)
+            # new_alien.x = current_x
+            # new_alien.rect.x = current_x
+            # self.aliens.add(new_alien)
+            # current_x += 2 * alien_width
+            self._create_alien(current_x)
+            current_x += alien_width
+
+    def _create_alien(self, x_position):
+        """Create an alien and place it in the row"""
+        new_alien = Alien(self)
+        new_alien.x = x_position
+        new_alien.rect.x = x_position
+        self.aliens.add(new_alien)
 
     def _check_keydown_events(self, event):
         """Respond to keypresses"""
@@ -93,7 +123,7 @@ class AlienInvasion:
         for bullet in self.bullets.sprites():
             bullet.draw_bullet()
         self.ship.blitime()
-
+        self.aliens.draw(self.screen)
         pygame.display.flip()
                 # self.clock.tick(60)
 if __name__ == "__main__":

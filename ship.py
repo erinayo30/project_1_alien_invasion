@@ -31,6 +31,6 @@ class Ship:
     #     update rect object from self.x
         self.rect.x = self.x
 
-    def blitime(self):
+    def blitme(self):
             """Draw the ship at the current location"""
             self.screen.blit(self.image, self.rect)

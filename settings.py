@@ -12,6 +12,7 @@ class Settings:
         self.bullet_height= 15
         self.bullet_color= (60,60,60)
         self.bullets_allowed= 5
+        self.ship_limit = 3
 
         # Ship settings
         self.ship_speed = 2

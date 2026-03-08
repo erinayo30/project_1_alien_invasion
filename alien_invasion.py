@@ -1,12 +1,12 @@
 import sys
-
+from time import sleep
 import pygame
-from pyexpat.errors import messages
 
 from settings import Settings
 from ship import Ship
 from bullet import Bullet
 from alien import Alien
+from game_stats import GameStats
 
 
 class AlienInvasion:
@@ -23,6 +23,9 @@ class AlienInvasion:
         self.settings.screen_height = self.screen.get_rect().height
         pygame.display.set_caption("Alien Invasion")
 
+        # create an instances to store game statistics
+        self.stats = GameStats(self)
+
         # create Ship
         self.ship = Ship(self)
 
@@ -32,22 +35,18 @@ class AlienInvasion:
         self.aliens = pygame.sprite.Group()
 
         # Ending game when Alien hit ship and showing the number of alin killed
-        self.game_active = True
-        self.hit_count = 0
         self.font = pygame.font.SysFont(None, 48)
 
         self._create_fleet()
     #     set the background color
     #     self.bg_color =(230, 230, 230)
 
-
-
     def run_game(self):
         """Start the main loop for the game"""
         while True:
             self._check_events()
 
-            if self.game_active:
+            if self.stats.game_active:
                 self.ship.update()
                 # self.bullets.update()
                 self._update_bullet()
@@ -57,6 +56,7 @@ class AlienInvasion:
             self.clock.tick(60)
 
         # Watch for keyboard and mouse events.
+
     def _check_events(self):
         """Respond to keypresses and mouse events"""
         for event in pygame.event.get():
@@ -66,6 +66,23 @@ class AlienInvasion:
                 self._check_keydown_events(event)
             elif event.type ==pygame.KEYUP:
                 self._check_keyup_events(event)
+
+    def _ship_hit(self):
+        """Respond appropriately if the ship has been hit."""
+        if  self.stats.ships_left > 0 :
+                self.stats.ships_left -= 1
+
+    #     get rid of any remaining bullets and alien
+                self.bullets.empty()
+                self.aliens.empty()
+
+    #     create a new fleet and centered the ship
+                self._create_fleet()
+                self.ship.center_ship()
+    #     pause
+                sleep(0.5)
+        else:
+            self.stats.game_active = False
 
 
     def _create_fleet(self):
@@ -100,7 +117,19 @@ class AlienInvasion:
         elif event.key == pygame.K_q:
             sys.exit()
         elif event.key == pygame.K_SPACE:
-            self._fire_bullet()
+            if self.stats.game_active:
+                self._fire_bullet()
+        elif not self.stats.game_active:
+            self._restart_game()
+
+    def _restart_game(self):
+        """Restart the game after game over"""
+        self.stats.game_active = True
+        self.stats.ships_left =3
+        self.bullets.empty()
+        self.aliens.empty()
+        self._create_fleet()
+        self.ship.center_ship()
 
     def _check_keyup_events(self, event):
         """Respond to key releases"""
@@ -146,12 +175,14 @@ class AlienInvasion:
 
     #     look for alien-ship collision
         if pygame.sprite.spritecollide(self.ship, self.aliens, False):
-            self.hit_count += 1
-            self.game_active = False
-            print("Ship Hit by Alien")
+            self._ship_hit()
+
+            # Look for aliens reaching the bottom of the screen
+            self._check_aliens_bottom()
 
     def _check_fleet_edges(self):
         """Respond appropriately if any aliens have reached an edge."""
+        screen_rect =self.screen.get_rect()
         for alien in self.aliens.sprites():
             if alien.check_edges():
                 self._change_fleet_direction()
@@ -173,14 +204,18 @@ class AlienInvasion:
         self.aliens.draw(self.screen)
 
         # Show game over message
-        if not self.game_active:
-            message = f"Game Over! Ship hit by alien ({self.hit_count})"
+        if not self.stats.game_active:
+            message = f"Game Over! Ship hit by alien ({self.stats.ships_left})"
             game_over = self.font.render(message, True, (255, 0, 0))
             rect = game_over.get_rect(center=self.screen.get_rect().center)
             self.screen.blit(game_over, rect)
 
+            restart_msg= self.font.render("Press any key to restart", True, (255, 0, 0))
+            restart_rect = restart_msg.get_rect(center=(self.screen.get_rect().centerx, self.screen.get_rect().centery+ 50))
+            self.screen.blit(restart_msg, restart_rect)
+
+
         pygame.display.flip()
-                # self.clock.tick(60)
         #     update screen to end game when Hit by alien
 
 if __name__ == "__main__":

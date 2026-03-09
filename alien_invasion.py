@@ -7,6 +7,7 @@ from ship import Ship
 from bullet import Bullet
 from alien import Alien
 from game_stats import GameStats
+from button import Button
 
 
 class AlienInvasion:
@@ -43,6 +44,8 @@ class AlienInvasion:
     
     # Start Alien Invasion in an inactive state
         self.game_active= False
+    #     Make the Play button
+        self.play_button= Button(self, "Play")
 
     def run_game(self):
         """Start the main loop for the game"""
@@ -69,6 +72,9 @@ class AlienInvasion:
                 self._check_keydown_events(event)
             elif event.type ==pygame.KEYUP:
                 self._check_keyup_events(event)
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_pos = pygame.mouse.get_pos()
+                self._check_play_button(mouse_pos)
 
     def _ship_hit(self):
         """Respond appropriately if the ship has been hit."""
@@ -217,16 +223,19 @@ class AlienInvasion:
 
         self.ship.blitme()
         self.aliens.draw(self.screen)
+        # Draw the play button if the game is inactive
+        if not self.game_active:
+            self.play_button.draw_button()
         # Show game over message
-        if not self.stats.game_active:
-            message = f"Game Over!"
-            game_over = self.font.render(message, True, (255, 0, 0))
-            rect = game_over.get_rect(center=self.screen.get_rect().center)
-            self.screen.blit(game_over, rect)
-
-            restart_msg= self.font.render("Press any key to restart", True, (255, 0, 0))
-            restart_rect = restart_msg.get_rect(center=(self.screen.get_rect().centerx, self.screen.get_rect().centery+ 50))
-            self.screen.blit(restart_msg, restart_rect)
+        # if not self.stats.game_active:
+        #     message = f"Game Over!"
+        #     game_over = self.font.render(message, True, (255, 0, 0))
+        #     rect = game_over.get_rect(center=self.screen.get_rect().center)
+        #     self.screen.blit(game_over, rect)
+        #
+        #     restart_msg= self.font.render("Press any key to restart", True, (255, 0, 0))
+        #     restart_rect = restart_msg.get_rect(center=(self.screen.get_rect().centerx, self.screen.get_rect().centery+ 50))
+        #     self.screen.blit(restart_msg, restart_rect)
 
 
         pygame.display.flip()
